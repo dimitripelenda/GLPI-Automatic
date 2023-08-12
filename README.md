@@ -1,5 +1,9 @@
 # GLPI-Automatic
 Projet pour automatiser installation glpi 
+Pour installer et faire fonctionner correctement le projet, vous aurez besoin :
+
+1. D'opérer sur un système Linux Ubuntu 20.04
+2. D'un accès root sur votre système
 
 # Présentation du projet :
 Le projet GLPI (Gestionnaire Libre de Parc Informatique) est un système de gestion de parc informatique et de service d'assistance. Il offre une plateforme complète pour la gestion des ressources matérielles et logicielles, la gestion des incidents, la gestion des demandes de service et bien plus encore. GLPI est utilisé par de nombreuses organisations pour améliorer l'efficacité de leur parc informatique et assurer un support informatique de qualité.
