@@ -1,4 +1,4 @@
-# GLPI-Automatic
+# GLPI-Automatisé
 Projet pour automatiser installation glpi 
 Pour installer et faire fonctionner correctement le projet, vous aurez besoin :
 
