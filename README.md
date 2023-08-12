@@ -1,7 +1,7 @@
 # Automatisation de GLPI
 Pour installer et faire fonctionner correctement le projet, vous aurez besoin :
 
-1. D'opérer sur un système Linux Ubuntu 20.04
+1. D'opérer sur un système Linux Ubuntu 
 2. D'un accès root sur votre système
 
 # Présentation du projet :
