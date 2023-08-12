@@ -217,6 +217,6 @@ Après avoir copié le script, rendez le script exécutable à l'aide de la comm
 
 chmod +x glpi_automated.py
 
-exécutez ce script comme ci-dessous :
-
+exécutez ce script comme ci-dessous : 
+Notez bien le script doit etre dans le meme repertoire que le fichier sql: glpi_backup.sql
 ./glpi_automated.py
