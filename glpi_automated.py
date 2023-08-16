@@ -19,6 +19,7 @@ def install_dependencies():
         'php8.1-xml', 'php8.1-curl', 'php8.1-gd', 'php8.1-intl', 'apcupsd', 'php-apcu'
     ]
     run_command("sudo apt-get update")
+    run_command("sudo apt-get upgrade -y")
     run_command("sudo apt-get install -y " + " ".join(packages))
 
 def install_mysql_connector_python():
