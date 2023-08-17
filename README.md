@@ -150,11 +150,17 @@ class DB extends DBmysql {{
 
 # 10. Configuration de virtualhost Apache pour GLPI
 def configure_virtualhost():
+    # Ask the user to enter the administrator's email address
+    server_admin = input("Enter the ServerAdmin email address: ")
+
+    # Ask the user to enter the custom virtual host name
+    server_name = input("Enter the ServerName for the virtual host (e.g., glpi.example.com): ")
+
     virtualhost_config = """
     <VirtualHost *:80>
-        ServerAdmin admin@example.com
+        ServerAdmin {server_admin}
         DocumentRoot /var/www/html/glpi/
-        ServerName glpi.example.com
+        ServerName {server_name}
 
         <Directory /var/www/html/glpi/>
             Options FollowSymLinks
