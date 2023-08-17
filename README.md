@@ -229,3 +229,10 @@ chmod +x glpi_automated.py
 exécutez ce script comme ci-dessous : 
 Notez bien le script doit etre dans le meme repertoire que le fichier sql: glpi_backup.sql
 ./glpi_automated.py
+
+# Connexion sur l'interface Web
+login par defaut: glpi
+password par defaut : glpi
+
+Notez bien , il est conseillé de les changer ! 
+
