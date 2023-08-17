@@ -232,6 +232,7 @@ Notez bien le script doit etre dans le meme repertoire que le fichier sql: glpi_
 
 # Connexion sur l'interface Web
 login par defaut: glpi
+
 password par defaut : glpi
 
 Notez bien , il est conseillé de les changer ! 
