@@ -5,6 +5,7 @@ import re
 import subprocess
 import getpass
 
+
 def run_command(command):
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     if result.returncode != 0:
@@ -46,6 +47,11 @@ def install_mariadb():
     run_command("sudo apt-get install -y mariadb-server python3")
 
 def set_mysql_password():
+    global mysql_password
+
+    if mysql_password is not None:
+        return
+        
     while True:
         mysql_password = getpass.getpass("Enter a strong password for MySQL (at least 8 characters, with at least one uppercase letter, one lowercase letter, one digit, and one special character): ")
         confirm_password = getpass.getpass("Confirm the password: ")
@@ -85,7 +91,8 @@ def configure_glpi():
     allow_signed_keys = False
 
     # Ask the user for the password
-    dbpassword = getpass.getpass("Enter the database password for 'glpiuser': ")
+    # Use the password already set in set_mysql_password()
+    dbpassword = mysql_password
 
     # Create the configuration file content
     config_content = f"""<?php
@@ -114,7 +121,8 @@ def configure_config_db_php():
     # New database information
     dbuser = 'glpiuser'
     dbdefault = 'glpidb'
-    dbpassword = getpass.getpass("Enter the database password for 'glpiuser': ")
+    # Use the password already set in set_mysql_password()
+    dbpassword = mysql_password
 
     # Create the configuration file content
     config_db_content = f"""<?php
