@@ -5,7 +5,9 @@ import re
 import subprocess
 import getpass
 
-def run_command(command):
+mysql_password = None  # Initialisation de la variable globale mysql_password
+
+def run_command(command): # Fonction pour exécuter des commandes système
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     if result.returncode != 0:
         print(f"Command failed: {result.stderr}")
@@ -21,15 +23,15 @@ def install_dependencies():
     run_command("sudo apt-get update")
     run_command("sudo apt-get upgrade -y")
     run_command("sudo apt-get install -y " + " ".join(packages))
-
-def install_mysql_connector_python():
+    
+def install_mysql_connector_python(): # Fonction pour installer le connecteur MySQL Python
     try:
         subprocess.run(["sudo", "pip3", "install", "mysql-connector-python"], check=True)
     except subprocess.CalledProcessError as e:
         print(f"Failed to install mysql-connector-python. Error: {e.stderr}")
         exit(1)
 
-def check_and_install_mysql_connector_python():
+def check_and_install_mysql_connector_python(): # Fonction pour vérifier et installer le connecteur MySQL Python si nécessaire
     try:
         import mysql.connector
     except ImportError:
@@ -46,6 +48,11 @@ def install_mariadb():
     run_command("sudo apt-get install -y mariadb-server python3")
 
 def set_mysql_password():
+    global mysql_password
+
+    if mysql_password is not None:
+        return
+        
     while True:
         mysql_password = getpass.getpass("Enter a strong password for MySQL (at least 8 characters, with at least one uppercase letter, one lowercase letter, one digit, and one special character): ")
         confirm_password = getpass.getpass("Confirm the password: ")
@@ -85,7 +92,8 @@ def configure_glpi():
     allow_signed_keys = False
 
     # Ask the user for the password
-    dbpassword = getpass.getpass("Enter the database password for 'glpiuser': ")
+    # Use the password already set in set_mysql_password()
+    dbpassword = mysql_password
 
     # Create the configuration file content
     config_content = f"""<?php
@@ -114,7 +122,8 @@ def configure_config_db_php():
     # New database information
     dbuser = 'glpiuser'
     dbdefault = 'glpidb'
-    dbpassword = getpass.getpass("Enter the database password for 'glpiuser': ")
+    # Use the password already set in set_mysql_password()
+    dbpassword = mysql_password
 
     # Create the configuration file content
     config_db_content = f"""<?php
@@ -138,34 +147,37 @@ class DB extends DBmysql {{
     run_command(f"sudo chown www-data:www-data {config_db_file}")
     run_command("sudo systemctl restart apache2")
 
+
 def configure_virtualhost():
     server_admin = input("Enter the ServerAdmin email address: ")
     server_name = input("Enter the ServerName for the virtual host (e.g., glpi.example.com): ")
 
+    # Configuration du Virtual Host avec le chemin absolu des certificats SSL
     virtualhost_config = f"""
-    <VirtualHost *:443>
-        ServerAdmin {server_admin}
-        DocumentRoot /var/www/html/glpi/
-        ServerName {server_name}
+<VirtualHost *:443>
+    ServerAdmin {server_admin}
+    DocumentRoot /var/www/html/glpi/
+    ServerName {server_name}
 
-        <Directory /var/www/html/glpi/>
-            Options FollowSymLinks
-            AllowOverride All
-            Require all granted
-        </Directory>
+    <Directory /var/www/html/glpi/>
+        Options FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
 
-        ErrorLog ${APACHE_LOG_DIR}/error.log
-        CustomLog ${APACHE_LOG_DIR}/access.log combined
+    ErrorLog /var/log/apache2/error.log
+    CustomLog /var/log/apache2/access.log combined
 
-        SSLEngine on
-        SSLCertificateFile /chemin/vers/le/certificat.pem
-        SSLCertificateKeyFile /chemin/vers/la/clé-privée.key
-    </VirtualHost>
-    """
+    SSLEngine on
+    SSLCertificateFile /etc/ssl/certs/selfsigned.crt
+    SSLCertificateKeyFile /etc/ssl/private/selfsigned.key
+</VirtualHost>
+"""
     with open("/etc/apache2/sites-available/glpi.conf", "w") as f:
         f.write(virtualhost_config)
     run_command("sudo a2ensite glpi.conf")
     run_command("sudo systemctl reload apache2")
+
 
 def import_sql_file():
     mysql_user = "glpiuser"
@@ -179,10 +191,11 @@ def import_sql_file():
     except subprocess.CalledProcessError as e:
         print(f"Error executing SQL import: {e.stderr}")
         exit(1)
-
+        
+# Fonction principale qui orchestre l'installation et la configuration de GLPI
 def main():
     try:
-
+        # Appel des fonctions pour installer et configurer GLPI
         fix_broken_dependencies()
         install_dependencies()
         install_mysql_connector_python()
@@ -202,7 +215,6 @@ def main():
             print("An error occurred during the installation of GLPI.")
     except Exception as e:
         print(f"Error occurred: {e}")
-
+# Exécution de la fonction principale si le script est exécuté directement
 if __name__ == "__main__":
     main()
-
