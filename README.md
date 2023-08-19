@@ -1,6 +1,6 @@
-## Automatisation de l'installation et configuration de GLPI à partir de la machine vierge
+# Automatisation de l'installation et configuration de GLPI à partir de la machine vierge
 
-# Automatisation de GLPI en 3 minutes !
+## Automatisation de GLPI en 3 minutes !
 Bienvenue dans le projet d'automatisation de GLPI en un temps record ! Si vous êtes passionné par la gestion de votre parc informatique avec GLPI, vous savez à quel point cette application est puissante. Cependant, l'installation et la configuration peuvent parfois être longues et fastidieuses. C'est là que notre script entre en jeu pour vous faire gagner du temps !
 
 # L'objectif en quelques minutes
