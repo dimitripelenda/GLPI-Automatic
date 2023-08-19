@@ -5,9 +5,9 @@ import re
 import subprocess
 import getpass
 
-mysql_password = None
+mysql_password = None  # Initialisation de la variable globale mysql_password
 
-def run_command(command):
+def run_command(command): # Fonction pour exécuter des commandes système
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     if result.returncode != 0:
         print(f"Command failed: {result.stderr}")
@@ -23,15 +23,15 @@ def install_dependencies():
     run_command("sudo apt-get update")
     run_command("sudo apt-get upgrade -y")
     run_command("sudo apt-get install -y " + " ".join(packages))
-
-def install_mysql_connector_python():
+    
+def install_mysql_connector_python(): # Fonction pour installer le connecteur MySQL Python
     try:
         subprocess.run(["sudo", "pip3", "install", "mysql-connector-python"], check=True)
     except subprocess.CalledProcessError as e:
         print(f"Failed to install mysql-connector-python. Error: {e.stderr}")
         exit(1)
 
-def check_and_install_mysql_connector_python():
+def check_and_install_mysql_connector_python(): # Fonction pour vérifier et installer le connecteur MySQL Python si nécessaire
     try:
         import mysql.connector
     except ImportError:
@@ -189,10 +189,11 @@ def import_sql_file():
     except subprocess.CalledProcessError as e:
         print(f"Error executing SQL import: {e.stderr}")
         exit(1)
-
+        
+# Fonction principale qui orchestre l'installation et la configuration de GLPI
 def main():
     try:
-
+        # Appel des fonctions pour installer et configurer GLPI
         fix_broken_dependencies()
         install_dependencies()
         install_mysql_connector_python()
@@ -212,6 +213,6 @@ def main():
             print("An error occurred during the installation of GLPI.")
     except Exception as e:
         print(f"Error occurred: {e}")
-
+# Exécution de la fonction principale si le script est exécuté directement
 if __name__ == "__main__":
     main()
