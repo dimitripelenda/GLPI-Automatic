@@ -5,6 +5,7 @@ import re
 import subprocess
 import getpass
 
+mysql_password = None
 
 def run_command(command):
     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
