@@ -1,9 +1,3 @@
-# Automatisation de GLPI
-Pour installer et faire fonctionner correctement le projet, vous aurez besoin :
-
-1. D'opérer sur un système Linux Ubuntu 
-2. D'un accès root sur votre système
-
 # Automatisation de GLPI en 3 minutes !
 Bienvenue dans le projet d'automatisation de GLPI en un temps record ! Si vous êtes passionné par la gestion de votre parc informatique avec GLPI, vous savez à quel point cette application est puissante. Cependant, l'installation et la configuration peuvent parfois être longues et fastidieuses. C'est là que notre script entre en jeu pour vous faire gagner du temps !
 
