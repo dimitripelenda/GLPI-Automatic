@@ -47,12 +47,11 @@ Notez bien le script doit etre dans le meme repertoire que le fichier sql: glpi_
 ./glpi_automated.py
 
 # Connexion sur l'interface Web
-login par defaut: glpi
+##login par defaut: glpi
+###password par defaut : glpi
 
-# password par defaut : glpi
-
-Notez bien , il est conseillé de les changer ! 
-./glpi_automated.py
+#Notez bien , il est conseillé de les changer ! 
+###./glpi_automated.py
 
 
 
