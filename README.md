@@ -50,7 +50,7 @@ python glpi_automated.py ou ./glpi_automated.py
 # Connexion sur l'interface Web
 login par defaut: glpi
 password par defaut : glpi
-# Notez bien , il est conseillé de changer password et login par defaut ! 
+## Notez bien , il est conseillé de changer password et login par defaut ! 
 
 
 
