@@ -33,7 +33,26 @@ Une fois le script terminé, GLPI sera opérationnel sur votre système. Vérifi
 ## Avertissement
 Assurez-vous de sauvegarder vos données importantes avant d'exécuter le script, car il peut modifier la configuration de votre système. Ce script est conçu pour automatiser le processus d'installation, ce qui signifie qu'il peut affecter les configurations existantes.
 
+# Pour exécution du script Python
+Par example: Création de fichier Python
+touch glpi_automated.py
 
+Exécuter un script Python
+Après avoir copié le script, rendez le script exécutable à l'aide de la commande suivante :
+
+chmod +x glpi_automated.py
+
+exécutez ce script comme ci-dessous : 
+Notez bien le script doit etre dans le meme repertoire que le fichier sql: glpi_backup.sql
+./glpi_automated.py
+
+# Connexion sur l'interface Web
+login par defaut: glpi
+
+# password par defaut : glpi
+
+Notez bien , il est conseillé de les changer ! 
+./glpi_automated.py
 
 
 
