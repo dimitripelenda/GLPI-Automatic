@@ -18,7 +18,7 @@ def install_dependencies():
     packages = [
         'python3-pip', 'mariadb-server', 'apache2', 'php', 'libapache2-mod-php', 'php-imap', 'php-ldap', 'php-curl',
         'php-xmlrpc', 'php-gd', 'php-mysql', 'php-cas', 'php8.1-mysqli', 'php8.1-dom',
-        'php8.1-xml', 'php8.1-curl', 'php8.1-gd', 'php8.1-intl', 'apcupsd', 'php-apcu'
+        'php8.1-xml', 'php8.1-curl', 'php8.1-gd', 'php8.1-intl', 'apcupsd', 'php-apcu', 'certbot', 'python3-certbot-apache'
     ]
     run_command("sudo apt-get update")
     run_command("sudo apt-get upgrade -y")
@@ -147,37 +147,49 @@ class DB extends DBmysql {{
     run_command(f"sudo chown www-data:www-data {config_db_file}")
     run_command("sudo systemctl restart apache2")
 
-
-def configure_virtualhost():
+def configure_https_virtualhost():
     server_admin = input("Enter the ServerAdmin email address: ")
     server_name = input("Enter the ServerName for the virtual host (e.g., glpi.example.com): ")
 
-    # Configuration du Virtual Host avec le chemin absolu des certificats SSL
+    # Générer les certificats avec Certbot
+    certbot_command = f"sudo certbot --apache -d {server_name}"
+    run_command(certbot_command)
+
+    # Configuration du Virtual Host HTTPS
     virtualhost_config = f"""
-<VirtualHost *:443>
-    ServerAdmin {server_admin}
-    DocumentRoot /var/www/html/glpi/
-    ServerName {server_name}
+    <VirtualHost *:80>
+        ServerAdmin {server_admin}
+        ServerName {server_name}
+        Redirect permanent / https://{server_name}/
+    </VirtualHost>
 
-    <Directory /var/www/html/glpi/>
-        Options FollowSymLinks
-        AllowOverride All
-        Require all granted
-    </Directory>
+    <IfModule mod_ssl.c>
+        <VirtualHost *:443>
+            ServerAdmin {server_admin}
+            ServerName {server_name}
+            DocumentRoot /var/www/html/glpi/
 
-    ErrorLog /var/log/apache2/error.log
-    CustomLog /var/log/apache2/access.log combined
+            SSLEngine on
+            SSLCertificateFile /etc/letsencrypt/live/{server_name}/fullchain.pem
+            SSLCertificateKeyFile /etc/letsencrypt/live/{server_name}/privkey.pem
+            SSLCertificateChainFile /etc/letsencrypt/live/{server_name}/chain.pem
 
-    SSLEngine on
-    SSLCertificateFile /etc/ssl/certs/selfsigned.crt
-    SSLCertificateKeyFile /etc/ssl/private/selfsigned.key
-</VirtualHost>
-"""
+            <Directory /var/www/html/glpi/>
+                Options FollowSymLinks
+                AllowOverride All
+                Require all granted
+            </Directory>
+
+            ErrorLog ${APACHE_LOG_DIR}/error.log
+            CustomLog ${APACHE_LOG_DIR}/access.log combined
+        </VirtualHost>
+    </IfModule>
+    """
+
     with open("/etc/apache2/sites-available/glpi.conf", "w") as f:
         f.write(virtualhost_config)
     run_command("sudo a2ensite glpi.conf")
     run_command("sudo systemctl reload apache2")
-
 
 def import_sql_file():
     mysql_user = "glpiuser"
@@ -205,7 +217,7 @@ def main():
         download_glpi()
         configure_glpi()
         configure_config_db_php()
-        configure_virtualhost()
+        configure_https_virtualhost() 
         import_sql_file()
         run_command("sudo rm -fR /var/www/html/glpi/install")
 
