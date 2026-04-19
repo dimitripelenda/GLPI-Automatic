@@ -3,83 +3,123 @@
 import subprocess
 import getpass
 
-def run(cmd):
-    print(f"[RUN] {cmd}")
-    subprocess.run(cmd, shell=True, check=True)
+mysql_password = None
 
-def install_packages():
+
+def run_command(command):
+    """Exécute une commande shell et arrête le script en cas d'erreur."""
+    print(f"[RUN] {command}")
+    result = subprocess.run(command, shell=True)
+
+    if result.returncode != 0:
+        print("Command failed")
+        exit(1)
+
+
+def fix_broken_dependencies():
+    """Répare les dépendances cassées."""
+    run_command("apt --fix-broken install -y")
+
+
+def install_dependencies():
+    """Installe les dépendances nécessaires pour GLPI."""
 
     packages = [
         "apache2",
         "mariadb-server",
         "php",
         "libapache2-mod-php",
-        "php-mysql",
-        "php-curl",
-        "php-gd",
-        "php-intl",
-        "php-xml",
-        "php-mbstring",
-        "php-bz2",
-        "php-zip",
         "php-imap",
         "php-ldap",
+        "php-curl",
+        "php-gd",
+        "php-mysql",
+        "php-xml",
+        "php-intl",
         "php-apcu",
+        "php-mbstring",
+        "php-zip",
+        "php-bz2",
         "wget",
         "tar"
     ]
 
-    run("apt update")
-    run("apt upgrade -y")
+    run_command("apt update")
+    run_command("apt upgrade -y")
 
     pkg_string = " ".join(packages)
 
-    run(f"apt install -y {pkg_string}")
+    run_command(f"apt install -y {pkg_string}")
+
 
 def configure_mariadb():
+    """Configure MariaDB et crée la base GLPI."""
 
-    print("\n[INFO] Configure MariaDB for GLPI")
+    global mysql_password
 
-    db_password = getpass.getpass("Enter password for GLPI database user: ")
+    print("\n[INFO] Configuration MariaDB")
 
-    run("systemctl enable mariadb")
-    run("systemctl start mariadb")
+    while True:
+        mysql_password = getpass.getpass("Enter password for GLPI database user: ")
+        confirm_password = getpass.getpass("Confirm password: ")
 
-    run("mysql -e \"CREATE DATABASE IF NOT EXISTS glpidb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\"")
+        if mysql_password == confirm_password and len(mysql_password) >= 8:
+            break
+        else:
+            print("Passwords do not match or too short.")
 
-    run(f"mysql -e \"CREATE USER IF NOT EXISTS 'glpiuser'@'localhost' IDENTIFIED BY '{db_password}';\"")
+    run_command("systemctl enable mariadb")
+    run_command("systemctl start mariadb")
 
-    run("mysql -e \"GRANT ALL PRIVILEGES ON glpidb.* TO 'glpiuser'@'localhost';\"")
+    run_command(
+        "mysql -e \"CREATE DATABASE IF NOT EXISTS glpidb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;\""
+    )
 
-    run("mysql -e \"FLUSH PRIVILEGES;\"")
+    run_command(
+        f"mysql -e \"CREATE USER IF NOT EXISTS 'glpiuser'@'localhost' IDENTIFIED BY '{mysql_password}';\""
+    )
 
-def install_glpi():
+    run_command(
+        "mysql -e \"GRANT ALL PRIVILEGES ON glpidb.* TO 'glpiuser'@'localhost';\""
+    )
+
+    run_command("mysql -e \"FLUSH PRIVILEGES;\"")
+
+
+def download_glpi():
+    """Télécharge et installe GLPI."""
 
     print("\n[INFO] Downloading GLPI")
 
-    run("wget -O /tmp/glpi.tgz https://github.com/glpi-project/glpi/releases/latest/download/glpi.tgz")
+    run_command(
+        "wget -O /tmp/glpi.tgz https://github.com/glpi-project/glpi/releases/latest/download/glpi.tgz"
+    )
 
-    run("mkdir -p /var/www")
+    run_command("mkdir -p /var/www")
 
-    run("tar -xzf /tmp/glpi.tgz -C /var/www")
+    run_command("tar -xzf /tmp/glpi.tgz -C /var/www")
 
-    run("chown -R www-data:www-data /var/www/glpi")
+    run_command("chown -R www-data:www-data /var/www/glpi")
 
-    run("chmod -R 775 /var/www/glpi/files")
-    run("chmod -R 775 /var/www/glpi/config")
-    run("chmod -R 775 /var/www/glpi/marketplace")
-    run("chmod -R 775 /var/www/glpi/plugins")
+    run_command("chmod -R 775 /var/www/glpi/files")
+    run_command("chmod -R 775 /var/www/glpi/config")
+    run_command("chmod -R 775 /var/www/glpi/marketplace")
+    run_command("chmod -R 775 /var/www/glpi/plugins")
+
 
 def configure_apache():
+    """Configure le VirtualHost Apache."""
 
-    print("\n[INFO] Configure Apache VirtualHost")
+    print("\n[INFO] Configure Apache")
 
-    servername = input("ServerName (ex: glpi.local): ").strip() or "glpi.local"
+    server_admin = input("ServerAdmin email: ").strip() or "admin@example.com"
+    server_name = input("ServerName (ex: glpi.local): ").strip() or "glpi.local"
 
     vhost = f"""
 <VirtualHost *:80>
 
-ServerName {servername}
+ServerAdmin {server_admin}
+ServerName {server_name}
 
 DocumentRoot /var/www/glpi/public
 
@@ -96,35 +136,47 @@ CustomLog ${{APACHE_LOG_DIR}}/glpi_access.log combined
 </VirtualHost>
 """
 
-    with open("/etc/apache2/sites-available/glpi.conf", "w") as f:
+    with open("/tmp/glpi.conf", "w") as f:
         f.write(vhost)
 
-    run("a2ensite glpi.conf")
+    run_command("mv /tmp/glpi.conf /etc/apache2/sites-available/glpi.conf")
 
-    run("a2enmod rewrite")
+    run_command("a2ensite glpi.conf")
 
-    run("systemctl reload apache2")
+    run_command("a2enmod rewrite")
+
+    run_command("systemctl restart apache2")
+
 
 def finish():
 
-    print("\n[OK] GLPI installation finished\n")
+    print("\n=====================================")
+    print("GLPI installation completed")
+    print("=====================================")
 
-    print("Open your browser:")
+    print("\nOpen your browser:")
     print("http://SERVER-IP")
 
-    print("\nThen finish installation via the web installer.")
+    print("\nDatabase configuration:")
+    print("Database: glpidb")
+    print("User: glpiuser")
+    print("Host: localhost")
+
 
 def main():
 
-    install_packages()
+    fix_broken_dependencies()
+
+    install_dependencies()
 
     configure_mariadb()
 
-    install_glpi()
+    download_glpi()
 
     configure_apache()
 
     finish()
+
 
 if __name__ == "__main__":
     main()
