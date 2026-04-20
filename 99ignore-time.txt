@@ -1,0 +1,41 @@
+# --------------------------------------------------------------------
+# 99ignore-time.conf  (version sauvegarde)
+#
+# Pourquoi ce fichier existe ?
+# ----------------------------
+# Ubuntu vérifie normalement la date des dépôts APT.
+# Si ton serveur est dans le FUTUR (ex : 2026) mais que les dépôts
+# Ubuntu sont datés 2024, alors APT bloque les mises à jour.
+#
+# Message typique :
+#   "Release file is not valid yet (invalid for another 2h)"
+#
+# Ce fichier désactive cette vérification.
+# Il permet d'utiliser APT même si la date système est en avance.
+#
+# Quand l'utiliser ?
+# ------------------
+# - Quand tu installes une VM neuve en 2026 ou plus tard
+# - Quand APT refuse de se mettre à jour à cause de la date
+# - Quand tu veux installer GLPI, Apache, MariaDB, PHP, etc.
+#
+# Comment l'utiliser sur une nouvelle VM ?
+# ----------------------------------------
+# 1. Copier ce fichier dans la VM (peu importe le nom ou l'extension)
+# 2. Le placer dans : /etc/apt/apt.conf.d/
+# 3. IMPORTANT : le renommer EXACTEMENT en :
+#        99ignore-time
+#    (sans extension)
+#
+# Exemple :
+#   cp 99ignore-time.conf /etc/apt/apt.conf.d/99ignore-time
+#
+# 4. Lancer :
+#       apt update
+#
+# Si tout est correct, APT fonctionnera immédiatement.
+#
+# --------------------------------------------------------------------
+
+Acquire::Check-Valid-Until "false";
+Acquire::Check-Date "false";
